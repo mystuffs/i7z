@@ -37,8 +37,6 @@
 #include <ncurses.h>
 #include "i7z.h"
 
-#define quiet false
-
 extern struct program_options prog_options;
 bool E7_mp_present=false;
 
@@ -318,8 +316,8 @@ void Print_Information_Processor(bool* nehalem, bool* sandy_bridge, bool* ivy_br
     get_familyinformation (&proc_info);
     print_family_info (&proc_info);
 
-    debug(quiet, "msr = Model Specific Register");
-    print_model(quiet, proc_info.model, proc_info.extended_model);
+    debug(prog_options.quiet, "msr = Model Specific Register");
+    print_model(prog_options.quiet, proc_info.model, proc_info.extended_model);
     if (proc_info.family >= 0x6) {
         if (proc_info.extended_model >= 0x3) {
             if (proc_info.model == 0xA) {

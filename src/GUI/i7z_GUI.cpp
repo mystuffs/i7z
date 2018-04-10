@@ -33,7 +33,9 @@
 #ifndef UINT32_MAX
 # define UINT32_MAX (4294967295U)
 #endif
+extern "C" {
 #include "../helper_functions.c"
+}
 
 #define MAX_PROCESSORS_GUI 12
 
