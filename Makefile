@@ -15,13 +15,6 @@ sbindir = $(prefix)/sbin/
 docdir = $(prefix)/share/doc/$(BIN)/
 mandir ?= $(prefix)/share/man/
 
-LBITS := $(shell getconf LONG_BIT)
-ifeq ($(LBITS),64)
-   CFLAGS += -Dx64_BIT
-else
-   CFLAGS += -Dx86
-endif
-
 bin: $(OBJ)
 	$(CC) $(CFLAGS) -o $(BIN) $(OBJ) $(LIBS) 
 

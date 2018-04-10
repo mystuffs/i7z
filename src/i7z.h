@@ -96,8 +96,7 @@ struct family_info
 //read TSC() code for 32 and 64-bit
 //http://www.mcs.anl.gov/~kazutomo/rdtsc.html
 
-#ifndef x64_BIT
-//code for 32 bit
+#ifndef __LP64__ // 32 bit
 static __inline__ unsigned long long int
 rdtsc ()
 {
@@ -105,10 +104,7 @@ rdtsc ()
 __asm__ volatile (".byte 0x0f, 0x31":"=A" (x));
     return x;
 }
-#endif
-
-#ifdef x64_BIT
-//code for 32 bit
+#else // 64 bit
 static __inline__ unsigned long long
 rdtsc (void)
 {
