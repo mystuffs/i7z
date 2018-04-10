@@ -40,7 +40,7 @@
 bool global_in_i7z_main_thread = false;
 int socket_list[MAX_PROCESSORS_GUI];
 int core_list[MAX_PROCESSORS_GUI];
-struct cpu_heirarchy_info chi;
+struct cpu_hierarchy_info chi;
 struct cpu_socket_info socket_0, socket_1;
 unsigned int numCPUs;
 struct program_options prog_options;
@@ -455,8 +455,6 @@ private slots:
 
 MyWidget::MyWidget (QWidget * parent):QWidget (parent)
 {
-
-    Print_Version_Information();
 
     //
     //Print_Information_Processor ();

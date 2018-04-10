@@ -634,7 +634,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
 
 void print_i7z ()
 {
-    struct cpu_heirarchy_info chi;
+    struct cpu_hierarchy_info chi;
     struct cpu_socket_info socket_0={.max_cpu=0, .socket_num=0, .processor_num={-1,-1,-1,-1,-1,-1,-1,-1}};
     struct cpu_socket_info socket_1={.max_cpu=0, .socket_num=1, .processor_num={-1,-1,-1,-1,-1,-1,-1,-1}};
 

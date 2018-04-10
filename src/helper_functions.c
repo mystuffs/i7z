@@ -432,7 +432,7 @@ int check_and_return_core_id(char*strinfo)
     }
 }
 
-void construct_sibling_list(struct cpu_heirarchy_info* chi)
+void construct_sibling_list(struct cpu_hierarchy_info* chi)
 {
     int i,j,core_id,socket_id;
     for (i=0;i< chi->max_online_cpu ;i++) {
@@ -465,7 +465,7 @@ void construct_sibling_list(struct cpu_heirarchy_info* chi)
     }
 }
 
-void construct_socket_information(struct cpu_heirarchy_info* chi,
+void construct_socket_information(struct cpu_hierarchy_info* chi,
     struct cpu_socket_info* socket_0,struct cpu_socket_info* socket_1,
     int socket_0_num, int socket_1_num)
 {
@@ -521,7 +521,7 @@ void print_socket_information(struct cpu_socket_info* socket)
     printf("Socket-%d [num of cpus %d physical %d logical %d] %s\n",socket->socket_num,socket->max_cpu,socket->num_physical_cores,socket->num_logical_cores,socket_list);
 }
 
-void construct_CPU_Hierarchy_info(struct cpu_heirarchy_info* chi)
+void construct_CPU_Hierarchy_info(struct cpu_hierarchy_info* chi)
 {
     FILE *fp = fopen("/proc/cpuinfo","r");
     char strinfo[200];
@@ -568,7 +568,7 @@ void construct_CPU_Hierarchy_info(struct cpu_heirarchy_info* chi)
     fclose(fp);
 }
 
-void print_CPU_Hierarchy(struct cpu_heirarchy_info chi)
+void print_CPU_Hierarchy(struct cpu_hierarchy_info chi)
 {
     int i;
     printf("\n------------------------------\n--[core id]--- Other information\n-------------------------------------\n");
