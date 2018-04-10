@@ -22,15 +22,22 @@ struct processors{
     bool sandy_bridge;
     bool ivy_bridge;
     bool haswell;
+    bool broadwell;
+    bool skylake;
+    bool koby_lake;
 };
 
 struct program_options{
     int logging; //0=no logging, 1=logging, 2=appending
+    bool quiet;
+    bool use_ncurses;
     int templogging;
     int cstatelogging;
     //always put variables before the below structure, something fishy going on and the variable is reset
     struct processors proc_version;
 };
+
+void init_ncurses();
 
 /// Logging Functions
 void logOpenFile_single();
@@ -51,6 +58,10 @@ void logCpuCstates_single_ts(struct timespec  *value) ;
 void logCpuCstates_dual(float value, int);
 void logCpuCstates_dual_c(char* value, int);
 void logCpuCstates_dual_ts(struct timespec  *value, int) ;
+
+void debug (bool quiet, char* message);
+void print_model (bool quiet, int model, int extended_model);
+void error (char *message);
 
 struct cpu_heirarchy_info {
     int max_online_cpu;
@@ -118,15 +129,6 @@ uint64_t get_msr_value (int cpu, uint32_t reg, unsigned int highbit,
 
 uint64_t set_msr_value (int cpu, uint32_t reg, uint64_t data);
 
-
-#ifdef USE_INTEL_CPUID
-void get_CPUs_info (unsigned int *num_Logical_OS,
-                    unsigned int *num_Logical_process,
-                    unsigned int *num_Processor_Core,
-                    unsigned int *num_Physical_Socket);
-
-#endif
-
 int get_number_of_present_cpu();
 void get_candidate_cores(struct cpu_heirarchy_info* chi);
 void get_online_cpus(struct cpu_heirarchy_info* chi);
@@ -145,8 +147,8 @@ void construct_socket_information(struct cpu_heirarchy_info* chi,
         struct cpu_socket_info* socket_0,struct cpu_socket_info* socket_1,
         int, int);
 void print_socket_information(struct cpu_socket_info* socket);
-void construct_CPU_Heirarchy_info(struct cpu_heirarchy_info* chi);
-void print_CPU_Heirarchy(struct cpu_heirarchy_info chi);
+void construct_CPU_Hierarchy_info(struct cpu_heirarchy_info* chi);
+void print_CPU_Hierarchy(struct cpu_heirarchy_info chi);
 int in_core_list(int ii,int* core_list);
 bool file_exists(char*);
 

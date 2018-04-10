@@ -34,14 +34,15 @@
 #include <assert.h>
 #include <math.h>
 #include <cpuid.h>
+#include <ncurses.h>
 #include "i7z.h"
 
-//#define ULLONG_MAX 18446744073709551615
+#define quiet false
 
 extern struct program_options prog_options;
 bool E7_mp_present=false;
 
-/////////////////////////////////////////READ TEMPERATURE////////////////////////////////////////////
+// Read temperature
 #define IA32_THERM_STATUS 0x19C
 #define IA32_TEMPERATURE_TARGET 0x1a2
 #define IA32_PACKAGE_THERM_STATUS 0x1b1
@@ -81,12 +82,7 @@ float Read_Voltage_CPU(int cpu_num){
     return (float)val / (float)(1 << 13);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-void
-print_family_info (struct family_info *proc_info)
+void print_family_info (struct family_info *proc_info)
 {
     //print CPU info
     printf ("i7z DEBUG:    Stepping %x\n", proc_info->stepping);
@@ -98,10 +94,24 @@ print_family_info (struct family_info *proc_info)
     //    printf("    Extended Family %d\n", proc_info->extended_family);
 }
 
+void init_ncurses()
+{
+    initscr();
+    cbreak();
+    noecho();
+    nodelay(stdscr, TRUE);
+    start_color();             /* initialize colors */
+    use_default_colors ();
+    init_pair (1, COLOR_GREEN, -1);
+    init_pair (2, COLOR_YELLOW, -1);
+    init_pair (3, COLOR_RED, -1);
+    init_pair (4, COLOR_WHITE, -1);
+}
+
 static inline void get_vendor (char *vendor_string)
 {
     //get vendor name
-    unsigned int eax = 0, ebx, ecx, edx;
+    unsigned int eax = 0, ebx = 0, ecx = 0, edx = 0;
     __get_cpuid (eax, &eax, &ebx, &ecx, &edx);
     memcpy (vendor_string, &ebx, 4);
     memcpy (vendor_string + 4, &edx, 4);
@@ -115,9 +125,6 @@ int turbo_status ()
     //turbo state flag
     unsigned int eax = 6, ebx, ecx, edx;
     __get_cpuid (eax, &eax, &ebx, &ecx, &edx);
-
-    //printf("eax %d\n",(eax&0x2)>>1);
-
     return ((eax & 0x2) >> 1);
 }
 
@@ -191,29 +198,6 @@ double estimate_MHz ()
     //printf("%g  elapsed %llu  microseconds %llu\n",mhz, elapsed, microseconds);
     return (mhz);
 }
-
-/* Number of decimal digits for a certain number of bits */
-/* (int) ceil(log(2^n)/log(10)) */
-int decdigits[] = {
-    1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5,
-    5, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10,
-    10, 10, 11, 11, 11, 12, 12, 12, 13, 13, 13, 13, 14, 14, 14, 15,
-    15, 15, 16, 16, 16, 16, 17, 17, 17, 18, 18, 18, 19, 19, 19, 19,
-    20
-};
-
-#define mo_hex  0x01
-#define mo_dec  0x02
-#define mo_oct  0x03
-#define mo_raw  0x04
-#define mo_uns  0x05
-#define mo_chx  0x06
-#define mo_mask 0x0f
-#define mo_fill 0x40
-#define mo_c    0x80
-
-const char *program;
-
 
 uint64_t get_msr_value (int cpu, uint32_t reg, unsigned int highbit,
                         unsigned int lowbit, int* error_indx)
@@ -306,15 +290,6 @@ uint64_t set_msr_value (int cpu, uint32_t reg, uint64_t data)
 }
 
 
-#ifdef USE_INTEL_CPUID
-void get_CPUs_info (unsigned int *num_Logical_OS,
-                    unsigned int *num_Logical_process,
-                    unsigned int *num_Processor_Core,
-                    unsigned int *num_Physical_Socket);
-
-#endif
-
-
 //Below code
 /* ----------------------------------------------------------------------- *
  *
@@ -334,110 +309,31 @@ void Print_Information_Processor(bool* nehalem, bool* sandy_bridge, bool* ivy_br
     get_vendor (vendor_string);
 
     if (strcmp (vendor_string, "GenuineIntel") == 0) {
-    //if (equal_string) {
         printf ("i7z DEBUG: Found Intel Processor\n");
     } else {
-        printf
-        ("this was designed to be an intel proc utility. You can perhaps mod it for your machine?\n");
+        printf ("Intel processor was not detected in CPUID\n");
         exit (1);
     }
 
     get_familyinformation (&proc_info);
     print_family_info (&proc_info);
 
-    //printf("%x %x",proc_info.extended_model,proc_info.family);
-
-    //check if its nehalem or exit
-    //Info from page 641 of Intel Manual 3B
-    //Extended model and Model can help determine the right cpu
-
-    //furthermore from pdf 241618.pdf from intel
-    //page 24, got the following info
-
-    //extended model is either 0x1 or 0x2
-    //check on model number as follows
-    //extended model, model no - processor type
-    //0x1, 0xA - i7, 45nm
-    //0x1, 0xE - i7, i5, Xeon, 45nm
-    //0x2, 0xE - Xeon MP, 45nm //e.g. x75xx processors
-    //0x2, 0xF - Xeon MP, 32nm //e.g. e7-48xx processors
-    //0x2, 0xC - i7, Xeon, 32nm
-    //0x2, 0x5 - i3, i5, i7 mobile processors, 32nm
-    //0x2, 0xA - i7, 32nm
-    //0x3, 0xA - i7, 22nm
-    //http://ark.intel.com/SSPECQDF.aspx
-    //http://software.intel.com/en-us/articles/intel-processor-identification-with-cpuid-model-and-family-numbers/
-    printf("i7z DEBUG: msr = Model Specific Register\n");
+    debug(quiet, "msr = Model Specific Register");
+    print_model(quiet, proc_info.model, proc_info.extended_model);
     if (proc_info.family >= 0x6) {
-        *nehalem = false;
-        *sandy_bridge = false;
-        *ivy_bridge = false;
-        *haswell = false;
-        if (proc_info.extended_model == 0x1) {
-            switch (proc_info.model) {
-            case 0xA:
-                printf ("i7z DEBUG: Detected a Nehalem (i7) - 45nm\n");
-                break;
-            case 0xE:
-            case 0xF:
-                printf ("i7z DEBUG: Detected a Nehalem (i7/i5/Xeon) - 45nm\n");
-            break;
-            default:
-                printf ("i7z DEBUG: Unknown processor, not exactly based on Nehalem\n");
-                //exit (1);
-            }
-            *nehalem = true;
-        } 
-        else if (proc_info.extended_model == 0x2) {
-            switch (proc_info.model) {
-                case 0xE:
-                    printf ("i7z DEBUG: Detected a Xeon MP - 45nm (7500, 6500 series)\n");
-                    *nehalem = true;
-                    break;
-                case 0xF:
-                    printf ("i7z DEBUG: Detected a Xeon MP - 32nm (E7 series)\n");
-                    *nehalem = true;
-                    E7_mp_present = true;
-                    break;
-                case 0xC:
-                    printf ("i7z DEBUG: Detected an i7/Xeon - 32 nm (Westmere)\n");
-                    *nehalem = true;
-                    break;
-                case 0x5:
-                    printf ("i7z DEBUG: Detected an i3/i5/i7 - 32nm (Westmere - 1st generation core)\n");
-                    *nehalem = true;
-                    break;
-                case 0xA:
-                case 0xD:
-                    printf ("i7z DEBUG: Detected an i3/i5/i7 - 32nm (Sandy Bridge)\n");
-                    *sandy_bridge = true;
-                    break;
-            }   
-        } 
-        else if (proc_info.extended_model == 0x3) {
-            switch (proc_info.model) {
-                case 0xA:
-                    printf ("i7z DEBUG: Detected an i7 - 22nm (Ivy Bridge) \n");
-                    *ivy_bridge = true;
-                    break;
-                case 0xC:
-                    printf ("i7z DEBUG: Detected an i7 - 22nm (Haswell)\n");
-                    *haswell = true;
-                    break;
-                default:
-                    printf("i7z DEBUG: detected a newer model of Ivy Bridge processor\n");
-                    sleep(5);
-            }
-        } else {
-            printf ("i7z DEBUG: Unknown processor, not exactly based on Nehalem, Sandy Bridge or Ivy Bridge\n");
-            //exit (1);
-        }
+        if (proc_info.extended_model >= 0x3) {
+            if (proc_info.model == 0xA) {
+                *ivy_bridge = true;
+            } else if (proc_info.model == 0xC) {
+                *haswell = true;
+            } else *haswell = true; //FIXME
+        } else if ((proc_info.model == 0xA || proc_info.model == 0xD) && proc_info.extended_model == 0x2) {
+            *sandy_bridge = true;
+        } else *nehalem = true;
     } else {
-        printf ("i7z DEBUG: Unknown processor, not exactly based on Nehalem\n");
-        printf ("If you are using an AMD processor, I highly recommend TurionPowerControl http://code.google.com/p/turionpowercontrol/\n");
+        error("Unknown, possibly pre i7 processor detected.");
         exit (1);
     }
-
 }
 
 void Test_Or_Make_MSR_DEVICE_FILES()
@@ -625,7 +521,7 @@ void print_socket_information(struct cpu_socket_info* socket)
     printf("Socket-%d [num of cpus %d physical %d logical %d] %s\n",socket->socket_num,socket->max_cpu,socket->num_physical_cores,socket->num_logical_cores,socket_list);
 }
 
-void construct_CPU_Heirarchy_info(struct cpu_heirarchy_info* chi)
+void construct_CPU_Hierarchy_info(struct cpu_heirarchy_info* chi)
 {
     FILE *fp = fopen("/proc/cpuinfo","r");
     char strinfo[200];
@@ -672,7 +568,7 @@ void construct_CPU_Heirarchy_info(struct cpu_heirarchy_info* chi)
     fclose(fp);
 }
 
-void print_CPU_Heirarchy(struct cpu_heirarchy_info chi)
+void print_CPU_Hierarchy(struct cpu_heirarchy_info chi)
 {
     int i;
     printf("\n------------------------------\n--[core id]--- Other information\n-------------------------------------\n");

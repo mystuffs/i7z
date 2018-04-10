@@ -68,16 +68,7 @@ int Dual_Socket ()
 
     printf ("i7z DEBUG: In i7z Dual_Socket()\n");
 
-    sleep (3);
 
-    if (use_ncurses) {
-        //Setup stuff for ncurses
-        initscr ();            /* start the curses mode */
-        start_color ();
-        //getmaxyx (stdscr, row, col);    /* get the number of rows and columns */
-        refresh ();
-        //Setup for ncurses completed
-    }
     print_i7z();
     exit (0);
     return (1);
@@ -181,12 +172,12 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
         char string_ptr1[200], string_ptr2[200];
 
         int IA32_PERF_GLOBAL_CTRL = 911;    //38F
-        int IA32_PERF_GLOBAL_CTRL_Value =    get_msr_value (CPU_NUM, IA32_PERF_GLOBAL_CTRL, 63, 0, &error_indx);
+        //int IA32_PERF_GLOBAL_CTRL_Value =    get_msr_value (CPU_NUM, IA32_PERF_GLOBAL_CTRL, 63, 0, &error_indx);
         SET_IF_TRUE(error_indx,online_cpus[0],-1);
         RETURN_IF_TRUE(online_cpus[0]==-1);
 
         int IA32_FIXED_CTR_CTL = 909;    //38D
-        int IA32_FIXED_CTR_CTL_Value = get_msr_value (CPU_NUM, IA32_FIXED_CTR_CTL, 63, 0, &error_indx);
+        //int IA32_FIXED_CTR_CTL_Value = get_msr_value (CPU_NUM, IA32_FIXED_CTR_CTL, 63, 0, &error_indx);
         SET_IF_TRUE(error_indx,online_cpus[0],-1);
         RETURN_IF_TRUE(online_cpus[0]==-1);
 
@@ -287,23 +278,23 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
                 assert(i < MAX_PROCESSORS); //online_cpus[i]
                 assert(ii < numCPUs_max);
 
-                IA32_PERF_GLOBAL_CTRL_Value =    get_msr_value (CPU_NUM, IA32_PERF_GLOBAL_CTRL, 63, 0, &error_indx);
+                //IA32_PERF_GLOBAL_CTRL_Value =    get_msr_value (CPU_NUM, IA32_PERF_GLOBAL_CTRL, 63, 0, &error_indx);
                 SET_IF_TRUE(error_indx,online_cpus[i],-1);
                 CONTINUE_IF_TRUE(online_cpus[i]==-1);
 
                 set_msr_value (CPU_NUM, IA32_PERF_GLOBAL_CTRL, 0x700000003LLU);
 
-                IA32_FIXED_CTR_CTL_Value = get_msr_value (CPU_NUM, IA32_FIXED_CTR_CTL, 63, 0, &error_indx);
+                //IA32_FIXED_CTR_CTL_Value = get_msr_value (CPU_NUM, IA32_FIXED_CTR_CTL, 63, 0, &error_indx);
                 SET_IF_TRUE(error_indx,online_cpus[i],-1);
                 CONTINUE_IF_TRUE(online_cpus[i]==-1);
 
                 set_msr_value (CPU_NUM, IA32_FIXED_CTR_CTL, 819);
 
-                IA32_PERF_GLOBAL_CTRL_Value =    get_msr_value (CPU_NUM, IA32_PERF_GLOBAL_CTRL, 63, 0, &error_indx);
+                //IA32_PERF_GLOBAL_CTRL_Value =    get_msr_value (CPU_NUM, IA32_PERF_GLOBAL_CTRL, 63, 0, &error_indx);
                 SET_IF_TRUE(error_indx,online_cpus[i],-1);
                 CONTINUE_IF_TRUE(online_cpus[i]==-1);
 
-                IA32_FIXED_CTR_CTL_Value = get_msr_value (CPU_NUM, IA32_FIXED_CTR_CTL, 63, 0, &error_indx);
+                //IA32_FIXED_CTR_CTL_Value = get_msr_value (CPU_NUM, IA32_FIXED_CTR_CTL, 63, 0, &error_indx);
                 SET_IF_TRUE(error_indx,online_cpus[i],-1);
                 CONTINUE_IF_TRUE(online_cpus[i]==-1);
 
@@ -647,21 +638,14 @@ void print_i7z ()
     struct cpu_socket_info socket_0={.max_cpu=0, .socket_num=0, .processor_num={-1,-1,-1,-1,-1,-1,-1,-1}};
     struct cpu_socket_info socket_1={.max_cpu=0, .socket_num=1, .processor_num={-1,-1,-1,-1,-1,-1,-1,-1}};
 
-    construct_CPU_Heirarchy_info(&chi);
+    construct_CPU_Hierarchy_info(&chi);
     construct_sibling_list(&chi);
-      //print_CPU_Heirarchy(chi);
+      //print_CPU_Hierarchy(chi);
     construct_socket_information(&chi, &socket_0, &socket_1, socket_0_num, socket_1_num);
       //print_socket_information(&socket_0);
       //print_socket_information(&socket_1);
 
     int printw_offset = (0) * 14;
-
-    //Make an array size max 8 (to accomdate Nehalem-EXEX -lol) to store the core-num that are candidates for a given socket
-    //removing it from here as it is already allocated in the function
-    //int *core_list, core_list_size_phy, core_list_size_log;
-
-    //iterator
-    int i;
 
     //turbo_mode enabled/disabled flag
     char TURBO_MODE;
@@ -705,7 +689,6 @@ void print_i7z ()
     TURBO_MODE = turbo_status ();
 
     //Flags and other things about HT.
-    int HT_ON;
     char HT_ON_str[30];
 
     int kk_1 = 11, kk_2 = 11;
@@ -719,10 +702,18 @@ void print_i7z ()
     //below variables stores how many cpus were observed till date for the socket
     int max_observed_cpu_socket1 = 0, max_observed_cpu_socket2 = 0;
 
+    //Setup stuff for ncurses
+    if (prog_options.use_ncurses) {
+        init_ncurses();
+        initscr ();
+    } else {
+        printf("GUI has been turned OFF\n");
+    }
+
     int k=0;
     for (;;)
     {
-        construct_CPU_Heirarchy_info(&chi);
+        construct_CPU_Hierarchy_info(&chi);
         construct_sibling_list(&chi);
         construct_socket_information(&chi, &socket_0, &socket_1, socket_0_num, socket_1_num);
 
@@ -730,13 +721,9 @@ void print_i7z ()
         if (chi.HT==1)
         {
             strncpy (HT_ON_str, "Hyper Threading ON\0", 30);
-            HT_ON = 1;
         } else {
             strncpy (HT_ON_str, "Hyper Threading OFF\0", 30);
-            HT_ON = 0;
         }
-
-        refresh ();
 
         SET_ONLINE_ARRAY_PLUS1(online_cpus)
 
