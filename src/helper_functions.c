@@ -325,30 +325,13 @@ void get_CPUs_info (unsigned int *num_Logical_OS,
  * ----------------------------------------------------------------------- */
 
 
-//sets whether its nehalem or sandy bridge
+// sets processor version
 void Print_Information_Processor(bool* nehalem, bool* sandy_bridge, bool* ivy_bridge, bool* haswell)
 {
     struct family_info proc_info;
 
     char vendor_string[13];
-    memset(vendor_string,0,13);
-
     get_vendor (vendor_string);
-    vendor_string[12] = '\0';
-
-    //look at the blurb below for why strcmp is done byte by byte
-    /*
-    bool equal_string = true;
-    char const* genuine_intel_str = "GenuineIntel";
-    int i;
-    for(i=0; i<12;i++) {
-        if (vendor_string[i] != genuine_intel_str[i])
-            equal_string = false;
-    }
-    */
-    // somehow using strcmp or strncmp is crashing the app when using -O2, -O3 with gcc-4.7
-    // (strncmp (vendor_string, "GenuineIntel",12) == 0)
-    // (strcmp (vendor_string, "GenuineIntel",12) == 0)
 
     if (strcmp (vendor_string, "GenuineIntel") == 0) {
     //if (equal_string) {
