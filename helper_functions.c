@@ -406,91 +406,68 @@ void Print_Information_Processor(bool* nehalem, bool* sandy_bridge, bool* ivy_br
     //http://ark.intel.com/SSPECQDF.aspx
     //http://software.intel.com/en-us/articles/intel-processor-identification-with-cpuid-model-and-family-numbers/
     printf("i7z DEBUG: msr = Model Specific Register\n");
-    if (proc_info.family >= 0x6)
-    {
-        if (proc_info.extended_model == 0x1)
-        {
-            switch (proc_info.model)
-            {
+    if (proc_info.family >= 0x6) {
+        *nehalem = false;
+        *sandy_bridge = false;
+        *ivy_bridge = false;
+        *haswell = false;
+        if (proc_info.extended_model == 0x1) {
+            switch (proc_info.model) {
             case 0xA:
-                printf ("i7z DEBUG: Detected a nehalem (i7) - 45nm\n");
+                printf ("i7z DEBUG: Detected a Nehalem (i7) - 45nm\n");
                 break;
             case 0xE:
             case 0xF:
-                printf ("i7z DEBUG: Detected a nehalem (i7/i5/Xeon) - 45nm\n");
+                printf ("i7z DEBUG: Detected a Nehalem (i7/i5/Xeon) - 45nm\n");
             break;
             default:
                 printf ("i7z DEBUG: Unknown processor, not exactly based on Nehalem\n");
                 //exit (1);
             }
-           *nehalem = true;
-        *sandy_bridge = false;
-        *ivy_bridge = false;
-        *haswell = true;
-
-        } else if (proc_info.extended_model == 0x2) {
-            switch (proc_info.model)
-            {
-            case 0xE:
-                printf ("i7z DEBUG: Detected a Xeon MP - 45nm (7500, 6500 series)\n");
-        *nehalem = true;
-              *sandy_bridge = false;
-        *ivy_bridge = false;
-                *haswell = false;
-        break;
-            case 0xF:
-                printf ("i7z DEBUG: Detected a Xeon MP - 32nm (E7 series)\n");
             *nehalem = true;
-              *sandy_bridge = false;
-        *ivy_bridge = false;
-                *haswell = false;
-              E7_mp_present = true;
-                break;
-            case 0xC:
-            *nehalem = true;
-              *sandy_bridge = false;
-        *ivy_bridge = false;
-                *haswell = false;
-                printf ("i7z DEBUG: Detected an i7/Xeon - 32 nm (westmere)\n");
-                break;
-            case 0x5:
-            *nehalem = true;
-              *sandy_bridge = false;
-        *ivy_bridge = false;
-                *haswell = false;
-            printf ("i7z DEBUG: Detected an i3/i5/i7 - 32nm (westmere - 1st generation core)\n");
-            break;
-            case 0xD:
-            *nehalem = false;
-          *sandy_bridge = true;
-        *ivy_bridge = false;
-                *haswell = false;
-        printf ("i7z DEBUG: Detected an i7 - 32nm (haven't seen this version around, do write to me with the model number)\n");
-            break;
-            }
-        } else if (proc_info.extended_model == 0x3) {
-            switch (proc_info.model)
-            {
-            case 0xA:
-                printf ("i7z DEBUG: Detected an i7 - 22nm (ivy bridge) \n");
-        *nehalem = false;
-              *sandy_bridge = false;
-        *ivy_bridge = true;
-                *haswell = false;
-                break;
-            case 0xC:
-                printf ("i7z DEBUG: Detected an i7 - 22nm (haswell)\n");
-                *nehalem = false;
-                *sandy_bridge = false;
-                *ivy_bridge = false;
-                *haswell = true;
-                break;
-            default:
-                printf("i7z DEBUG: detected a newer model of ivy bridge processor\n");
-                sleep(5);
+        } 
+        else if (proc_info.extended_model == 0x2) {
+            switch (proc_info.model) {
+                case 0xE:
+                    printf ("i7z DEBUG: Detected a Xeon MP - 45nm (7500, 6500 series)\n");
+                    *nehalem = true;
+                    break;
+                case 0xF:
+                    printf ("i7z DEBUG: Detected a Xeon MP - 32nm (E7 series)\n");
+                    *nehalem = true;
+                    E7_mp_present = true;
+                    break;
+                case 0xC:
+                    printf ("i7z DEBUG: Detected an i7/Xeon - 32 nm (Westmere)\n");
+                    *nehalem = true;
+                    break;
+                case 0x5:
+                    printf ("i7z DEBUG: Detected an i3/i5/i7 - 32nm (Westmere - 1st generation core)\n");
+                    *nehalem = true;
+                    break;
+                case 0xA:
+                case 0xD:
+                    printf ("i7z DEBUG: Detected an i3/i5/i7 - 32nm (Sandy Bridge)\n");
+                    *sandy_bridge = true;
+                    break;
+            }   
+        } 
+        else if (proc_info.extended_model == 0x3) {
+            switch (proc_info.model) {
+                case 0xA:
+                    printf ("i7z DEBUG: Detected an i7 - 22nm (Ivy Bridge) \n");
+                    *ivy_bridge = true;
+                    break;
+                case 0xC:
+                    printf ("i7z DEBUG: Detected an i7 - 22nm (Haswell)\n");
+                    *haswell = true;
+                    break;
+                default:
+                    printf("i7z DEBUG: detected a newer model of Ivy Bridge processor\n");
+                    sleep(5);
             }
         } else {
-            printf ("i7z DEBUG: Unknown processor, not exactly based on Nehalem, Sandy bridge or Ivy Bridge\n");
+            printf ("i7z DEBUG: Unknown processor, not exactly based on Nehalem, Sandy Bridge or Ivy Bridge\n");
             //exit (1);
         }
     } else {
