@@ -33,6 +33,7 @@
 #include <time.h>
 #include <assert.h>
 #include <math.h>
+#include <cpuid.h>
 #include "i7z.h"
 
 //#define ULLONG_MAX 18446744073709551615
@@ -97,39 +98,14 @@ print_family_info (struct family_info *proc_info)
     //    printf("    Extended Family %d\n", proc_info->extended_family);
 }
 
-static inline void cpuid (unsigned int *eax, unsigned int *ebx,
-                          unsigned int *ecx, unsigned int *edx)
-{
-    /*
-    unsigned int _eax = info, _ebx, _ecx, _edx;
-    asm volatile ("mov %%ebx, %%edi;" // save ebx (for PIC)
-                  "cpuid;"
-                  "mov %%ebx, %%esi;" // pass to caller
-                  "mov %%edi, %%ebx;" // restore ebx
-                  :"+a" (_eax), "=b" (_ebx), "=c" (_ecx), "=d" (_edx)
-                  :      // inputs: eax is handled above
-                  :"edi" // clobbers: we hit edi directly);
-    if (eax) *eax = _eax;
-    if (ebx) *ebx = _ebx;
-    if (ecx) *ecx = _ecx;
-    if (edx) *edx = _edx;*/
-
-    asm volatile ("cpuid"
-            : "=a" (*eax),
-              "=b" (*ebx),
-              "=c" (*ecx),
-              "=d" (*edx)
-            : "0" (*eax), "2" (*ecx));
-}
-
-static inline void  get_vendor (char *vendor_string)
+static inline void get_vendor (char *vendor_string)
 {
     //get vendor name
-    unsigned int a = 0, b, c, d;
-    cpuid (&a, &b, &c, &d);
-    memcpy (vendor_string, &b, 4);
-    memcpy (&vendor_string[4], &d, 4);
-    memcpy (&vendor_string[8], &c, 4);
+    unsigned int eax = 0, ebx, ecx, edx;
+    __get_cpuid (eax, &eax, &ebx, &ecx, &edx);
+    memcpy (vendor_string, &ebx, 4);
+    memcpy (vendor_string + 4, &edx, 4);
+    memcpy (vendor_string + 8, &ecx, 4);
     vendor_string[12] = '\0';
     //        printf("Vendor %s\n",vendor_string);
 }
@@ -138,7 +114,7 @@ int turbo_status ()
 {
     //turbo state flag
     unsigned int eax = 6, ebx, ecx, edx;
-    cpuid (&eax, &ebx, &ecx, &edx);
+    __get_cpuid (eax, &eax, &ebx, &ecx, &edx);
 
     //printf("eax %d\n",(eax&0x2)>>1);
 
@@ -149,7 +125,7 @@ static inline void get_familyinformation (struct family_info *proc_info)
 {
     //get info about CPU
     unsigned int eax = 1, ebx, ecx, edx;
-    cpuid (&eax, &ebx, &ecx, &edx);
+    __get_cpuid (eax, &eax, &ebx, &ecx, &edx);
     //  printf ("eax %x\n", b);
     proc_info->stepping = eax & 0x0000000F;    //bits 3:0
     proc_info->model = (eax & 0x000000F0) >> 4;    //bits 7:4
@@ -347,11 +323,6 @@ void get_CPUs_info (unsigned int *num_Logical_OS,
  *   Under GPL v2
  *
  * ----------------------------------------------------------------------- */
-
-void Print_Version_Information()
-{
-    printf ("i7z DEBUG: i7z version: %s\n",i7z_VERSION_INFO);
-}
 
 
 //sets whether its nehalem or sandy bridge

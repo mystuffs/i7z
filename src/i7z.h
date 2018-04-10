@@ -160,7 +160,6 @@ void print_socket_information(struct cpu_socket_info* socket);
 void construct_CPU_Heirarchy_info(struct cpu_heirarchy_info* chi);
 void print_CPU_Heirarchy(struct cpu_heirarchy_info chi);
 int in_core_list(int ii,int* core_list);
-void Print_Version_Information();
 bool file_exists(char*);
 
 #define SET_ONLINE_ARRAY_MINUS1(online_cpus) {int iii;for(iii=0;iii<MAX_PROCESSORS;iii++) online_cpus[iii]=-1;}
