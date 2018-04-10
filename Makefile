@@ -7,7 +7,7 @@ INCLUDEFLAGS =
 CC ?= gcc
 
 BIN	= i7z
-SRC	= i7z.c helper_functions.c i7z_Single_Socket.c i7z_Dual_Socket.c
+SRC	= $(wildcard src/*.c)
 OBJ	= $(SRC:.c=.o)
 
 prefix ?= /usr/local
@@ -29,7 +29,7 @@ bin: $(OBJ)
 # 	$(CC) $(CFLAGS) -o $(PERFMON-BIN) perfmon-i7z.c helper_functions.c $(LIBS)
 
 clean:
-	rm -f *.o $(BIN)
+	rm -f src/*.o $(BIN)
 
 distclean: clean
 	rm -f *~ \#*
@@ -37,5 +37,3 @@ distclean: clean
 install:  $(BIN)
 	install -D -m 0644 doc/i7z.man $(DESTDIR)$(mandir)man1/i7z.1
 	install -D -m 755 $(BIN) $(DESTDIR)$(sbindir)$(BIN)
-	install -d $(DESTDIR)$(docdir)
-	install -m 0644 README.txt put_cores_offline.sh put_cores_online.sh MAKEDEV-cpuid-msr $(DESTDIR)$(docdir)
