@@ -11,25 +11,13 @@
  * ----------------------------------------------------------------------- */
 
 #include <sys/time.h>
-
-#define i7z_VERSION_INFO "svn-r93-(27-MAY-2013)"
-
-//structure to store the information about the processor
-#define proccpuinfo "/proc/cpuinfo"
-
-#ifndef bool
-#define bool int
-#endif
-#define false 0
-#define true 1
+#include <stdbool.h>
 
 #define MAX_PROCESSORS  128
 #define MAX_HI_PROCESSORS    MAX_PROCESSORS
 #define MAX_SK_PROCESSORS    (MAX_PROCESSORS/4)
 
-//add newer version of core processors here, this is basically to change any things that are done to the register
-//seems like sandybridge doesnot use the IA32_TEMPERATURE_TARGET in Read_Thermal_Status_CPU
-struct core_i7_version{
+struct processors{
     bool nehalem;
     bool sandy_bridge;
     bool ivy_bridge;
@@ -41,7 +29,7 @@ struct program_options{
     int templogging;
     int cstatelogging;
     //always put variables before the below structure, something fishy going on and the variable is reset
-    struct core_i7_version i7_version;
+    struct processors proc_version;
 };
 
 /// Logging Functions

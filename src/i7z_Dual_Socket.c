@@ -323,7 +323,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
                 SET_IF_TRUE(error_indx,online_cpus[i],-1);
                 CONTINUE_IF_TRUE(online_cpus[i]==-1);
 
-                if (prog_options.i7_version.sandy_bridge){
+                if (prog_options.proc_version.sandy_bridge){
                     old_val_C7[ii] = get_msr_value (CPU_NUM, 1022, 63, 0, &error_indx);
                     SET_IF_TRUE(error_indx,online_cpus[i],-1);
                     CONTINUE_IF_TRUE(online_cpus[i]==-1);
@@ -333,7 +333,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
         }
         (*kk_1)++;
         nanosleep (&one_second_sleep, NULL);
-        if (prog_options.i7_version.sandy_bridge){
+        if (prog_options.proc_version.sandy_bridge){
             mvprintw (9 + printw_offset, 0, "\tCore [core-id]  :Actual Freq (Mult.)\t  C0%%   Halt(C1)%%  C3 %%   C6 %%  C7 %%  Temp      VCore\n");
         }else{
             mvprintw (9 + printw_offset, 0, "\tCore [core-id]  :Actual Freq (Mult.)\t  C0%%   Halt(C1)%%  C3 %%   C6 %%  Temp      VCore\n");
@@ -369,7 +369,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
             SET_IF_TRUE(error_indx,online_cpus[i],-1);
             CONTINUE_IF_TRUE(online_cpus[i]==-1);
             
-            if (prog_options.i7_version.sandy_bridge) {
+            if (prog_options.proc_version.sandy_bridge) {
                 new_val_C7[ii] = get_msr_value (CPU_NUM, 1022, 63, 0, &error_indx);
                 SET_IF_TRUE(error_indx,online_cpus[i],-1);
                 CONTINUE_IF_TRUE(online_cpus[i]==-1);            
@@ -413,7 +413,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
                 CPU_CLK_C6 = new_val_C6[ii] - old_val_C6[ii];
             }
 
-            if(prog_options.i7_version.sandy_bridge)  {
+            if(prog_options.proc_version.sandy_bridge)  {
                 if (old_val_C7[ii] > new_val_C7[ii])
                 {            //handle overflow
                     CPU_CLK_C7 = (UINT64_MAX - old_val_C7[ii]) + new_val_C7[ii];
@@ -436,7 +436,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
             C6_time[ii] = ((long double) CPU_CLK_C6 /
                            (long double) (new_TSC[ii] - old_TSC[ii]));
 
-            if(prog_options.i7_version.sandy_bridge)  {
+            if(prog_options.proc_version.sandy_bridge)  {
                 C7_time[ii] = ((long double) CPU_CLK_C7 /
                            (long double) (new_TSC[ii] - old_TSC[ii]));
             }
@@ -477,7 +477,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
                     C6_time[ii] = 0;
                 }
             }
-            if (prog_options.i7_version.sandy_bridge) {
+            if (prog_options.proc_version.sandy_bridge) {
                 if (C7_time[ii] < 1e-2)
                 {
                     if (C7_time[ii] > 1e-4)
@@ -496,7 +496,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
         {
             assert(ii < MAX_SK_PROCESSORS);
             i = core_list[ii];
-            if (prog_options.i7_version.sandy_bridge) {
+            if (prog_options.proc_version.sandy_bridge) {
                 if ( !IS_THIS_BETWEEN_0_100(C0_time[i] * 100) ||
                     !IS_THIS_BETWEEN_0_100(C1_time[i] * 100 - (C3_time[i] + C6_time[i]) * 100) ||
                     !IS_THIS_BETWEEN_0_100(C3_time[i] * 100) ||
@@ -526,7 +526,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
             assert(ii < MAX_SK_PROCESSORS);
             i = core_list[ii];
 
-            if (prog_options.i7_version.sandy_bridge) {
+            if (prog_options.proc_version.sandy_bridge) {
                   //there is a bit of leeway to be had as the counts might be off by a bit
                 //thus threshold so that the diff is thresholded to 0
                 c1_time = C1_time[i] * 100 - (C3_time[i] + C6_time[i] + C7_time[i]) * 100;
@@ -607,7 +607,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
             logCpuCstates_dual((float)THRESHOLD_BETWEEN_0_100(c1_time),socket_0.socket_num);           logCpuCstates_dual_c(",",socket_0.socket_num);
             logCpuCstates_dual((float)THRESHOLD_BETWEEN_0_100(C3_time[i] * 100),socket_0.socket_num);  logCpuCstates_dual_c(",",socket_0.socket_num);
             logCpuCstates_dual((float)THRESHOLD_BETWEEN_0_100(C6_time[i] * 100),socket_0.socket_num); 
-            if(prog_options.i7_version.sandy_bridge){
+            if(prog_options.proc_version.sandy_bridge){
                 logCpuCstates_dual_c(",",socket_0.socket_num);
                 logCpuCstates_dual((float)THRESHOLD_BETWEEN_0_100(C7_time[i] * 100),socket_0.socket_num);
             } 
@@ -628,7 +628,7 @@ void print_i7z_socket(struct cpu_socket_info socket_0, int printw_offset, int PL
         memcpy (old_val_REF, new_val_REF, sizeof (*old_val_REF) * numCPUs);
         memcpy (old_val_C3, new_val_C3, sizeof (*old_val_C3) * numCPUs);
         memcpy (old_val_C6, new_val_C6, sizeof (*old_val_C6) * numCPUs);
-        if (prog_options.i7_version.sandy_bridge) {
+        if (prog_options.proc_version.sandy_bridge) {
           memcpy (old_val_C7, new_val_C7, sizeof (*old_val_C7) * numCPUs);
         }
         memcpy (tvstart, tvstop, sizeof (*tvstart) * numCPUs);
