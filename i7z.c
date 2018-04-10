@@ -391,16 +391,16 @@ void modprobing_msr()
 
 void init_ncurses()
 {
-	initscr();
-	cbreak();
-	noecho();
-	nodelay(stdscr, TRUE);
-	start_color();             /* initialize colors */
-	use_default_colors ();
-	init_pair (1, COLOR_GREEN, -1);
-	init_pair (2, COLOR_YELLOW, -1);
-	init_pair (3, COLOR_RED, -1);
-	init_pair (4, COLOR_WHITE, -1);
+    initscr();
+    cbreak();
+    noecho();
+    nodelay(stdscr, TRUE);
+    start_color();             /* initialize colors */
+    use_default_colors ();
+    init_pair (1, COLOR_GREEN, -1);
+    init_pair (2, COLOR_YELLOW, -1);
+    init_pair (3, COLOR_RED, -1);
+    init_pair (4, COLOR_WHITE, -1);
 }
 
 //Info: I start from index 1 when i talk about cores on CPU
@@ -518,7 +518,7 @@ int main (int argc, char **argv)
 
     Print_Information_Processor (&prog_options.i7_version.nehalem, &prog_options.i7_version.sandy_bridge, &prog_options.i7_version.ivy_bridge, &prog_options.i7_version.haswell);
 
-//	printf("nehalem %d, sandy brdige %d\n", prog_options.i7_version.nehalem, prog_options.i7_version.sandy_bridge);
+//    printf("nehalem %d, sandy brdige %d\n", prog_options.i7_version.nehalem, prog_options.i7_version.sandy_bridge);
 
     Test_Or_Make_MSR_DEVICE_FILES ();
     modprobing_msr();
@@ -536,24 +536,24 @@ int main (int argc, char **argv)
     */
     /*
     while( (c=getopt(argc,argv,"w:")) !=-1){
-		cvalue = optarg;
-    	//printf("argument %c\n",c);
-    	if(cvalue == NULL){
-    	    printf("With -w option, requires an argument for append or logging\n");
-    	    exit(1);
-    	}else{
-     	    //printf("         %s\n",cvalue);
-     	    if(strcmp(cvalue,"a")==0){
-     		printf("Appending frequencies to %s (single_socket) or cpu_freq_log_dual_(%d/%d).txt (dual socket)\n", CPU_FREQUENCY_LOGGING_FILE_single,0,1);
-     		prog_options.logging=2;
-     	    }else if(strcmp(cvalue,"l")==0){
-     		printf("Logging frequencies to %s (single socket) or cpu_freq_log_dual_(%d/%d).txt (dual socket) \n", CPU_FREQUENCY_LOGGING_FILE_single,0,1);
-     		prog_options.logging=1;
-     	    }else{
-     		printf("Unknown Option, ignoring -w option.\n");
-     		prog_options.logging=0;
-     	    }
-     	    sleep(3);
+        cvalue = optarg;
+        //printf("argument %c\n",c);
+        if(cvalue == NULL){
+            printf("With -w option, requires an argument for append or logging\n");
+            exit(1);
+        }else{
+             //printf("         %s\n",cvalue);
+             if(strcmp(cvalue,"a")==0){
+             printf("Appending frequencies to %s (single_socket) or cpu_freq_log_dual_(%d/%d).txt (dual socket)\n", CPU_FREQUENCY_LOGGING_FILE_single,0,1);
+             prog_options.logging=2;
+             }else if(strcmp(cvalue,"l")==0){
+             printf("Logging frequencies to %s (single socket) or cpu_freq_log_dual_(%d/%d).txt (dual socket) \n", CPU_FREQUENCY_LOGGING_FILE_single,0,1);
+             prog_options.logging=1;
+             }else{
+             printf("Unknown Option, ignoring -w option.\n");
+             prog_options.logging=0;
+             }
+             sleep(3);
         }
     }
     */

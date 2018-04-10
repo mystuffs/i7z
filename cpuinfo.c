@@ -198,9 +198,9 @@ void print_CPU_Heirarchy(struct cpu_heirarchy_info chi)
 {
     int i;
     printf("Legend: processor number is the processor number as linux knows, socket number is the socket number,\n \
-	    coreid number is the core with which this processor is associated, thus for HT machines there will be 2 processors\n\
-	    sharing the same core id. display core is to specify if i need to show the information about this core or not (i.e.\n\
-	    if i am already showing information about a core then i dont need to show information about the sibling\n");
+        coreid number is the core with which this processor is associated, thus for HT machines there will be 2 processors\n\
+        sharing the same core id. display core is to specify if i need to show the information about this core or not (i.e.\n\
+        if i am already showing information about a core then i dont need to show information about the sibling\n");
     for (i=0;i < chi.max_online_cpu;i++) {
         assert(i < MAX_HI_PROCESSORS);
         printf("--[%d] Processor number %d\n",i,chi.processor_num[i]);

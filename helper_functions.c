@@ -46,38 +46,38 @@ bool E7_mp_present=false;
 #define IA32_PACKAGE_THERM_STATUS 0x1b1
 
 int Get_Bits_Value(unsigned long val,int highbit, int lowbit){
-	unsigned long data = val;
-	int bits = highbit - lowbit + 1;
-	if(bits<64){
-	    data >>= lowbit;
-	    data &= (1ULL<<bits) - 1;
-	}
-	return(data);
+    unsigned long data = val;
+    int bits = highbit - lowbit + 1;
+    if(bits<64){
+        data >>= lowbit;
+        data &= (1ULL<<bits) - 1;
+    }
+    return(data);
 }
 
 // a nice document to read is 322683.pdf from intel
 int Read_Thermal_Status_CPU(int cpu_num){
-	int error_indx;
-	unsigned long val= get_msr_value(cpu_num,IA32_THERM_STATUS,63,0,&error_indx);
-	int digital_readout = Get_Bits_Value(val,23,16);
-	bool thermal_status = Get_Bits_Value(val,32,31);
+    int error_indx;
+    unsigned long val= get_msr_value(cpu_num,IA32_THERM_STATUS,63,0,&error_indx);
+    int digital_readout = Get_Bits_Value(val,23,16);
+    bool thermal_status = Get_Bits_Value(val,32,31);
 
         val= get_msr_value(cpu_num,IA32_TEMPERATURE_TARGET,63,0,&error_indx);
         int PROCHOT_temp = Get_Bits_Value(val,23,16);
 
-	//temperature is prochot - digital readout
-	if (thermal_status)
-	  return(PROCHOT_temp - digital_readout);
-	else
-	  return(-1);
+    //temperature is prochot - digital readout
+    if (thermal_status)
+      return(PROCHOT_temp - digital_readout);
+    else
+      return(-1);
 }
 
 #define MSR_PERF_STATUS 0x198
 
 float Read_Voltage_CPU(int cpu_num){
-	int error_indx;
-	unsigned long val = get_msr_value(cpu_num,MSR_PERF_STATUS,47,32,&error_indx);
-	return (float)val / (float)(1 << 13);
+    int error_indx;
+    unsigned long val = get_msr_value(cpu_num,MSR_PERF_STATUS,47,32,&error_indx);
+    return (float)val / (float)(1 << 13);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,12 +143,12 @@ static inline void get_familyinformation (struct family_info *proc_info)
     unsigned int b;
     cpuid (1, &b, NULL, NULL, NULL);
     //  printf ("eax %x\n", b);
-    proc_info->stepping = b & 0x0000000F;	//bits 3:0
-    proc_info->model = (b & 0x000000F0) >> 4;	//bits 7:4
-    proc_info->family = (b & 0x00000F00) >> 8;	//bits 11:8
-    proc_info->processor_type = (b & 0x00007000) >> 12;	//bits 13:12
-    proc_info->extended_model = (b & 0x000F0000) >> 16;	//bits 19:16
-    proc_info->extended_family = (b & 0x0FF00000) >> 20;	//bits 27:20
+    proc_info->stepping = b & 0x0000000F;    //bits 3:0
+    proc_info->model = (b & 0x000000F0) >> 4;    //bits 7:4
+    proc_info->family = (b & 0x00000F00) >> 8;    //bits 11:8
+    proc_info->processor_type = (b & 0x00007000) >> 12;    //bits 13:12
+    proc_info->extended_model = (b & 0x000F0000) >> 16;    //bits 19:16
+    proc_info->extended_family = (b & 0x0FF00000) >> 20;    //bits 27:20
 }
 
 double estimate_MHz ()
@@ -167,8 +167,8 @@ double estimate_MHz ()
     */
     struct timezone tz;
     struct timeval tvstart, tvstop;
-    unsigned long long int cycles[2];		/* must be 64 bit */
-    unsigned long long int microseconds;	/* total time taken */
+    unsigned long long int cycles[2];        /* must be 64 bit */
+    unsigned long long int microseconds;    /* total time taken */
 
     memset (&tz, 0, sizeof (tz));
 
@@ -342,7 +342,7 @@ void get_CPUs_info (unsigned int *num_Logical_OS,
 
 void Print_Version_Information()
 {
-	printf ("i7z DEBUG: i7z version: %s\n",i7z_VERSION_INFO);
+    printf ("i7z DEBUG: i7z version: %s\n",i7z_VERSION_INFO);
 }
 
 
@@ -418,64 +418,64 @@ void Print_Information_Processor(bool* nehalem, bool* sandy_bridge, bool* ivy_br
             case 0xE:
             case 0xF:
                 printf ("i7z DEBUG: Detected a nehalem (i7/i5/Xeon) - 45nm\n");
-	        break;
+            break;
             default:
                 printf ("i7z DEBUG: Unknown processor, not exactly based on Nehalem\n");
                 //exit (1);
             }
-   	    *nehalem = true;
-	    *sandy_bridge = false;
-	    *ivy_bridge = false;
-	    *haswell = true;
+           *nehalem = true;
+        *sandy_bridge = false;
+        *ivy_bridge = false;
+        *haswell = true;
 
         } else if (proc_info.extended_model == 0x2) {
             switch (proc_info.model)
             {
             case 0xE:
                 printf ("i7z DEBUG: Detected a Xeon MP - 45nm (7500, 6500 series)\n");
-		*nehalem = true;
-  	    	*sandy_bridge = false;
-		*ivy_bridge = false;
+        *nehalem = true;
+              *sandy_bridge = false;
+        *ivy_bridge = false;
                 *haswell = false;
-		break;
+        break;
             case 0xF:
                 printf ("i7z DEBUG: Detected a Xeon MP - 32nm (E7 series)\n");
-	        *nehalem = true;
-  	        *sandy_bridge = false;
-		*ivy_bridge = false;
+            *nehalem = true;
+              *sandy_bridge = false;
+        *ivy_bridge = false;
                 *haswell = false;
-  	        E7_mp_present = true;
+              E7_mp_present = true;
                 break;
             case 0xC:
-	        *nehalem = true;
-  	        *sandy_bridge = false;
-		*ivy_bridge = false;
+            *nehalem = true;
+              *sandy_bridge = false;
+        *ivy_bridge = false;
                 *haswell = false;
                 printf ("i7z DEBUG: Detected an i7/Xeon - 32 nm (westmere)\n");
                 break;
             case 0x5:
-	        *nehalem = true;
-  	        *sandy_bridge = false;
-		*ivy_bridge = false;
+            *nehalem = true;
+              *sandy_bridge = false;
+        *ivy_bridge = false;
                 *haswell = false;
-	        printf ("i7z DEBUG: Detected an i3/i5/i7 - 32nm (westmere - 1st generation core)\n");
-	        break;
+            printf ("i7z DEBUG: Detected an i3/i5/i7 - 32nm (westmere - 1st generation core)\n");
+            break;
             case 0xD:
-	        *nehalem = false;
-	  	*sandy_bridge = true;
-		*ivy_bridge = false;
+            *nehalem = false;
+          *sandy_bridge = true;
+        *ivy_bridge = false;
                 *haswell = false;
-		printf ("i7z DEBUG: Detected an i7 - 32nm (haven't seen this version around, do write to me with the model number)\n");
-	        break;
+        printf ("i7z DEBUG: Detected an i7 - 32nm (haven't seen this version around, do write to me with the model number)\n");
+            break;
             }
         } else if (proc_info.extended_model == 0x3) {
             switch (proc_info.model)
             {
             case 0xA:
                 printf ("i7z DEBUG: Detected an i7 - 22nm (ivy bridge) \n");
-		*nehalem = false;
-  	    	*sandy_bridge = false;
-		*ivy_bridge = true;
+        *nehalem = false;
+              *sandy_bridge = false;
+        *ivy_bridge = true;
                 *haswell = false;
                 break;
             case 0xC:
@@ -525,15 +525,15 @@ void Test_Or_Make_MSR_DEVICE_FILES()
             //Try the Makedev script
             //sourced from MAKEDEV-cpuid-msr script in msr-tools
             system ("msr_major=202; \
-							cpuid_major=203; \
-							n=0; \
-							while [ $n -lt 16 ]; do \
-								mkdir -m 0755 -p /dev/cpu/$n; \
-								mknod /dev/cpu/$n/msr -m 0600 c $msr_major $n; \
-								mknod /dev/cpu/$n/cpuid -m 0444 c $cpuid_major $n; \
-								n=`expr $n + 1`; \
-							done; \
-							");
+                            cpuid_major=203; \
+                            n=0; \
+                            while [ $n -lt 16 ]; do \
+                                mkdir -m 0755 -p /dev/cpu/$n; \
+                                mknod /dev/cpu/$n/msr -m 0600 c $msr_major $n; \
+                                mknod /dev/cpu/$n/cpuid -m 0444 c $cpuid_major $n; \
+                                n=`expr $n + 1`; \
+                            done; \
+                            ");
             printf ("i7z DEBUG: modprobbing for msr\n");
             system ("modprobe msr");
         } else {
@@ -700,7 +700,7 @@ void construct_CPU_Heirarchy_info(struct cpu_heirarchy_info* chi)
 
     if (fp!=NULL) {
         while ( fgets(strinfo,200,fp) != NULL) {
-            //		printf(strinfo);
+            //        printf(strinfo);
             tmp_processor_num = check_and_return_processor(strinfo);
             tmp_physicalid_num = check_and_return_physical_id(strinfo);
             tmp_coreid_num = check_and_return_core_id(strinfo);
