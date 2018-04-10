@@ -1,6 +1,7 @@
 # Makefile for i7z, GPL v2, License in COPYING
 
-CFLAGS ?= -O3 -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DBUILD_MAIN -Wimplicit-function-declaration
+CFLAGS ?= -O3 -Wall
+CFLAGS += -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DBUILD_MAIN -Wimplicit-function-declaration
 LIBS += -lncurses -lpthread -lrt -lm
 INCLUDEFLAGS = 
 CC ?= gcc
