@@ -24,7 +24,7 @@
 
 #define U_L_I unsigned long int
 #define U_L_L_I unsigned long long int
-#define numCPUs_max MAX_PROCESSORS
+#define numCores_max MAX_PROCESSORS
 
 extern int socket_0_num, socket_1_num;
 extern bool E7_mp_present;
@@ -63,7 +63,7 @@ int Single_Socket ()
         fclose(fp_log_file_freq);
     }
 
-
+/*
     printf ("i7z DEBUG: In i7z Single_Socket()\n\r");
 
     if (prog_options.proc_version.sandy_bridge)
@@ -74,7 +74,7 @@ int Single_Socket ()
     printf ("i7z DEBUG: guessing Haswell\n\r");
     else
     printf ("i7z DEBUG: guessing Nehalem\n\r");
-
+*/
     print_i7z_single();
     exit (0);
     return (1);
@@ -141,7 +141,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
               continue;
         }*/
         //number of CPUs is as told via cpuinfo
-        int numCPUs = socket_0.num_physical_cores;
+        int numCores = socket_0.num_physical_cores;
 
         CPU_Multiplier = get_msr_value (CPU_NUM, PLATFORM_INFO_MSR, PLATFORM_INFO_MSR_high, PLATFORM_INFO_MSR_low, &error_indx);
         SET_IF_TRUE(error_indx,online_cpus[0],-1);
@@ -227,25 +227,25 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
 
         mvprintw (4 + printw_offset, 0,"  CPU Multiplier %dx || Bus clock frequency (BCLK) %0.2f MHz \n",    CPU_Multiplier, BLCK);
 
-        if (numCPUs <= 0) {
+        if (numCores <= 0) {
             sprintf (string_ptr1, "  Max TURBO Multiplier (if Enabled) with 0 cores is");
             sprintf (string_ptr2, " %dx/%dx ", MAX_TURBO_1C, MAX_TURBO_2C);
         }
-        if (numCPUs >= 1 && numCPUs < 4) {
+        if (numCores >= 1 && numCores < 4) {
             sprintf (string_ptr1, "  Max TURBO Multiplier (if Enabled) with 1/2 Cores is");
             sprintf (string_ptr2, "  ");
         }
-        if (numCPUs >= 2 && numCPUs < 6) {
+        if (numCores >= 2 && numCores < 6) {
             sprintf (string_ptr1, "  Max TURBO Multiplier (if Enabled) with 1/2/3/4 Cores is");
             sprintf (string_ptr2, " %dx/%dx/%dx/%dx ", MAX_TURBO_1C, MAX_TURBO_2C, MAX_TURBO_3C, MAX_TURBO_4C);
         }
-        if (numCPUs >= 2 && numCPUs >= 6) {    // Gulftown 6-cores, Nehalem-EX
+        if (numCores >= 2 && numCores >= 6) {    // Gulftown 6-cores, Nehalem-EX
             sprintf (string_ptr1, "  Max TURBO Multiplier (if Enabled) with 1/2/3/4/5/6 Cores is");
             sprintf (string_ptr2, " %dx/%dx/%dx/%dx/%dx/%dx ", MAX_TURBO_1C, MAX_TURBO_2C, MAX_TURBO_3C, MAX_TURBO_4C,
                      MAX_TURBO_5C, MAX_TURBO_6C);
         }
 
-        numCPUs = core_list_size_phy;
+        numCores = core_list_size_phy;
         numPhysicalCores = core_list_size_phy;
         numLogicalCores = core_list_size_log;
 
@@ -279,13 +279,13 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
         //to prevent loopback, reset the counters back to 0 after 10 iterations roughly 10 secs
         if (*kk_1 > 10) {
             *kk_1 = 0;
-            for (i = 0; i <  numCPUs; i++) {
+            for (i = 0; i <  numCores; i++) {
                 //Set up the performance counters and then start reading from them
                 assert(i < MAX_SK_PROCESSORS);
                 CPU_NUM = core_list[i];
                 ii = core_list[i];
                 assert(i < MAX_PROCESSORS); //online_cpus[i]
-                assert(ii < numCPUs_max);
+                assert(ii < numCores_max);
 
                 //IA32_PERF_GLOBAL_CTRL_Value =    get_msr_value (CPU_NUM, IA32_PERF_GLOBAL_CTRL, 63, 0, &error_indx);
                 SET_IF_TRUE(error_indx,online_cpus[i],-1);
@@ -323,7 +323,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
                 SET_IF_TRUE(error_indx,online_cpus[i],-1);
                 CONTINUE_IF_TRUE(online_cpus[i]==-1);
 
-        if(prog_options.proc_version.sandy_bridge || prog_options.proc_version.ivy_bridge || prog_options.proc_version.haswell){
+        if(!prog_options.proc_version.nehalem){
             //table b-20 in 325384 and only for sandy bridge
                 old_val_C7[ii] = get_msr_value (CPU_NUM, 1022, 63, 0, &error_indx);
                 SET_IF_TRUE(error_indx,online_cpus[i],-1);
@@ -335,7 +335,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
         }
         (*kk_1)++;
         nanosleep (&one_second_sleep, NULL);
-    if(prog_options.proc_version.sandy_bridge || prog_options.proc_version.ivy_bridge || prog_options.proc_version.haswell){
+    if(!prog_options.proc_version.nehalem){
             mvprintw (11 + printw_offset, 0, "\tCore [core-id]  :Actual Freq (Mult.)\t  C0%%   Halt(C1)%%  C3 %%   C6 %%   C7 %%  Temp      VCore\n");
     }else{
             mvprintw (11 + printw_offset, 0, "\tCore [core-id]  :Actual Freq (Mult.)\t  C0%%   Halt(C1)%%  C3 %%   C6 %%  Temp      VCore\n");
@@ -343,7 +343,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
         //estimate the CPU speed
         estimated_mhz = estimate_MHz ();
 
-        for (i = 0; i <  numCPUs; i++) {
+        for (i = 0; i <  numCores; i++) {
             //read from the performance counters
             //things like halted unhalted core cycles
 
@@ -351,7 +351,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
             CPU_NUM = core_list[i];
             ii = core_list[i];
             assert(i < MAX_PROCESSORS); //online_cpus[i]
-            assert(ii < numCPUs_max);
+            assert(ii < numCores_max);
 
             new_val_CORE[ii] = get_msr_value (CPU_NUM, 778, 63, 0, &error_indx);
             SET_IF_TRUE(error_indx,online_cpus[i],-1);
@@ -369,7 +369,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
             SET_IF_TRUE(error_indx,online_cpus[i],-1);
             CONTINUE_IF_TRUE(online_cpus[i]==-1);
 
-        if(prog_options.proc_version.sandy_bridge || prog_options.proc_version.ivy_bridge || prog_options.proc_version.haswell){
+        if(!prog_options.proc_version.nehalem){
         new_val_C7[ii] = get_msr_value (CPU_NUM, 1022, 63, 0, &error_indx);
         SET_IF_TRUE(error_indx,online_cpus[i],-1);
             CONTINUE_IF_TRUE(online_cpus[i]==-1);
@@ -430,7 +430,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
             C6_time[ii] = ((long double) CPU_CLK_C6 /
                            (long double) (new_TSC[ii] - old_TSC[ii]));
 
-        if(prog_options.proc_version.sandy_bridge || prog_options.proc_version.ivy_bridge || prog_options.proc_version.haswell){
+        if(!prog_options.proc_version.nehalem){
             C7_time[ii] = ((long double) CPU_CLK_C7 /
                                (long double) (new_TSC[ii] - old_TSC[ii]));
         }
@@ -475,7 +475,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
     }
         //CHECK IF ALL COUNTERS ARE CORRECT AND NO GARBAGE VALUES ARE PRESENT
         //If there is any garbage values set print_core[i] to 0
-        for (ii = 0; ii <  numCPUs; ii++) {
+        for (ii = 0; ii <  numCores; ii++) {
             assert(ii < MAX_SK_PROCESSORS);
             i = core_list[ii];
         if(!prog_options.proc_version.nehalem){
@@ -501,7 +501,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
         }
 
         //Now print the information about the cores. Print garbage values message if there is garbage
-        for (ii = 0; ii <  numCPUs; ii++) {
+        for (ii = 0; ii <  numCores; ii++) {
             assert(ii < MAX_SK_PROCESSORS);
             i = core_list[ii];
 
@@ -547,7 +547,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
                   if (in_core_list(ii,core_list)){
                       continue;
                   }else{
-                      mvprintw (12 + k + numCPUs + printw_offset, 0, "\tProcessor %d [%d]:  OFFLINE\n", k + numCPUs + 1, ii);
+                      mvprintw (12 + k + numCores + printw_offset, 0, "\tProcessor %d [%d]:  OFFLINE\n", k + numCores + 1, ii);
                   }
                   k++;
         }*/
@@ -557,7 +557,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
         //till 6 print a blank line
 
         //for(ii=*max_observed_cpu; ii<6; ii++)
-        for (ii = numCPUs; ii<6; ii++)
+        for (ii = numCores; ii<6; ii++)
             mvprintw (12 + ii + printw_offset, 0, "\n");
 
         TRUE_CPU_FREQ = 0;
@@ -571,7 +571,7 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
 
         logCpuCstates_single_ts( &global_ts);
 
-        for (ii = 0; ii < numCPUs; ii++) {
+        for (ii = 0; ii < numCores; ii++) {
             assert(ii < MAX_SK_PROCESSORS);
             i = core_list[ii];
             if ( (_FREQ[i] > TRUE_CPU_FREQ) && (print_core[ii]) && !isinf(_FREQ[i]) ) {
@@ -603,17 +603,17 @@ void print_i7z_socket_single(struct cpu_socket_info socket_0, int printw_offset,
         //shift the new values to the old counter values
         //so that the next time we use those to find the difference
         memcpy (old_val_CORE, new_val_CORE,
-                sizeof (*old_val_CORE) * numCPUs);
-        memcpy (old_val_REF, new_val_REF, sizeof (*old_val_REF) * numCPUs);
-        memcpy (old_val_C3, new_val_C3, sizeof (*old_val_C3) * numCPUs);
-        memcpy (old_val_C6, new_val_C6, sizeof (*old_val_C6) * numCPUs);
+                sizeof (*old_val_CORE) * numCores);
+        memcpy (old_val_REF, new_val_REF, sizeof (*old_val_REF) * numCores);
+        memcpy (old_val_C3, new_val_C3, sizeof (*old_val_C3) * numCores);
+        memcpy (old_val_C6, new_val_C6, sizeof (*old_val_C6) * numCores);
 
-    if(prog_options.proc_version.sandy_bridge || prog_options.proc_version.ivy_bridge || prog_options.proc_version.haswell){
-        memcpy (old_val_C7, new_val_C7, sizeof (*old_val_C7) * numCPUs);
+    if(!prog_options.proc_version.nehalem){
+        memcpy (old_val_C7, new_val_C7, sizeof (*old_val_C7) * numCores);
     }
 
-        memcpy (tvstart, tvstop, sizeof (*tvstart) * numCPUs);
-        memcpy (old_TSC, new_TSC, sizeof (*old_TSC) * numCPUs);
+        memcpy (tvstart, tvstop, sizeof (*tvstart) * numCores);
+        memcpy (old_TSC, new_TSC, sizeof (*old_TSC) * numCores);
     } else {
         // If all the cores in the socket go offline, just erase the whole screen
         //WELL for single socket machine this code will never be executed. lol
@@ -662,17 +662,17 @@ void print_i7z_single ()
     int PLATFORM_INFO_MSR_low = 8;
     int PLATFORM_INFO_MSR_high = 15;
 
-    unsigned long long int old_val_CORE[2][numCPUs_max], new_val_CORE[2][numCPUs_max];
-    unsigned long long int old_val_REF[2][numCPUs_max], new_val_REF[2][numCPUs_max];
-    unsigned long long int old_val_C3[2][numCPUs_max], new_val_C3[2][numCPUs_max];
-    unsigned long long int old_val_C6[2][numCPUs_max], new_val_C6[2][numCPUs_max];
-    unsigned long long int old_val_C7[2][numCPUs_max], new_val_C7[2][numCPUs_max];
+    unsigned long long int old_val_CORE[2][numCores_max], new_val_CORE[2][numCores_max];
+    unsigned long long int old_val_REF[2][numCores_max], new_val_REF[2][numCores_max];
+    unsigned long long int old_val_C3[2][numCores_max], new_val_C3[2][numCores_max];
+    unsigned long long int old_val_C6[2][numCores_max], new_val_C6[2][numCores_max];
+    unsigned long long int old_val_C7[2][numCores_max], new_val_C7[2][numCores_max];
 
-    unsigned long long int old_TSC[2][numCPUs_max], new_TSC[2][numCPUs_max];
-    long double C0_time[2][numCPUs_max], C1_time[2][numCPUs_max],
-    C3_time[2][numCPUs_max], C6_time[2][numCPUs_max], C7_time[2][numCPUs_max];
-    double _FREQ[2][numCPUs_max], _MULT[2][numCPUs_max];
-    struct timeval tvstart[2][numCPUs_max], tvstop[2][numCPUs_max];
+    unsigned long long int old_TSC[2][numCores_max], new_TSC[2][numCores_max];
+    long double C0_time[2][numCores_max], C1_time[2][numCores_max],
+    C3_time[2][numCores_max], C6_time[2][numCores_max], C7_time[2][numCores_max];
+    double _FREQ[2][numCores_max], _MULT[2][numCores_max];
+    struct timeval tvstart[2][numCores_max], tvstop[2][numCores_max];
 
     struct timespec one_second_sleep;
     one_second_sleep.tv_sec = 0;

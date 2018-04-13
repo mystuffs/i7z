@@ -1,6 +1,6 @@
 # Makefile for i7z, GPL v2, License in COPYING
 
-CFLAGS ?= -O3 -Wall
+CFLAGS ?= -O3 -Wall -Wextra
 CFLAGS += -D_GNU_SOURCE
 LIBS += -lncurses -lpthread -lrt -lm
 INCLUDEFLAGS = 
