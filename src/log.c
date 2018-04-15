@@ -2,8 +2,11 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include "i7z.h"
+#include "intel.h"
 
 extern struct program_options prog_options;
+
+char* report_addr = "github.com/afontenot/i7z";
 
 char* CPU_FREQUENCY_LOGGING_FILE_single="cpu_freq_log.txt";
 char* CPU_FREQUENCY_LOGGING_FILE_dual="cpu_freq_log_dual_%d.txt";
@@ -21,33 +24,37 @@ void error (char* message) {
     debug(false, message);
 }
 
-void print_model(bool quiet, int model, int extended_model) {
-    switch (extended_model) {
-        case 0x1:
+void print_model(bool quiet, int model) {
+    switch (model) {
+        case INTEL_NEHALEM:
             debug(quiet, "Detected i3/i5/i7 Nehalem");
             break;
-        case 0x2:
-            switch (model) {
-                case 0x5:
-                    debug(quiet, "Detected i3/i5/i7 Westmere");
-                    break;
-                case 0xA:
-                case 0xD:
-                    debug(quiet, "Detected i3/i5/i7 Sandy Bridge");
-                    break;
-                default:
-                    debug(quiet, "Detected Xeon");
-            }
+        case INTEL_WESTMERE:
+            debug(quiet, "Detected i3/i5/i7 Westmere");
             break;
-        case 0x3:
-            switch (model) {
-                case 0xA:
-                    debug(quiet, "Detected i3/i5/i7 Ivy Bridge");
-                    break;
-                case 0xC:
-                    debug(quiet, "Detected i3/i5/i7 Haswell");
-                    break;
-            }
+        case INTEL_SANDYBRIDGE:
+            debug(quiet, "Detected i3/i5/i7 Sandy Bridge");
+            break;
+        case INTEL_HASWELL:
+            debug(quiet, "Detected i3/i5/i7 Haswell");
+            break;
+        case INTEL_BROADWELL:
+            debug(quiet, "Detected i3/i5/i7 Broadwell");
+            break;
+        case INTEL_SKYLAKE:
+            debug(quiet, "Detected i3/i5/i7 Skylake");
+            break;
+        case INTEL_KABYLAKE:
+            debug(quiet, "Detected i3/i5/i7 Kabylake");
+            break;
+        case INTEL_CANNONLAKE:
+            debug(quiet, "Detected i3/i5/i7 Cannonlake (mobile)");
+            break;
+        default: ;
+            char output[100];
+            sprintf(output, "unknown processor! please report this to %s", report_addr);
+            debug(quiet, output);
+            break;
     }
 }
 

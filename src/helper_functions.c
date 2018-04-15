@@ -36,6 +36,7 @@
 #include <cpuid.h>
 #include <ncurses.h>
 #include "i7z.h"
+#include "intel.h"
 
 extern struct program_options prog_options;
 bool E7_mp_present=false;
@@ -87,7 +88,6 @@ void print_family_info (struct family_info *proc_info)
     printf ("i7z DEBUG:    Model %x\n", proc_info->model);
     printf ("i7z DEBUG:    Family %x\n", proc_info->family);
     printf ("i7z DEBUG:    Processor Type %x\n", proc_info->processor_type);
-    printf ("i7z DEBUG:    Extended Model %x\n", proc_info->extended_model);
     //    printf("    Extended Family %x\n", (short int*)(&proc_info->extended_family));
     //    printf("    Extended Family %d\n", proc_info->extended_family);
 }
@@ -133,10 +133,11 @@ static inline void get_familyinformation (struct family_info *proc_info)
     __get_cpuid (eax, &eax, &ebx, &ecx, &edx);
     //  printf ("eax %x\n", b);
     proc_info->stepping = eax & 0x0000000F;    //bits 3:0
-    proc_info->model = (eax & 0x000000F0) >> 4;    //bits 7:4
+    // tack extended model id onto model number
+    proc_info->model =  ((eax & 0x000F0000) >> 12) + ((eax & 0x000000F0) >> 4);    //bits 7:4 and 19:16
     proc_info->family = (eax & 0x00000F00) >> 8;    //bits 11:8
     proc_info->processor_type = (eax & 0x00007000) >> 12;    //bits 13:12
-    proc_info->extended_model = (eax & 0x000F0000) >> 16;    //bits 19:16
+    //proc_info->extended_model = (eax & 0x000F0000) >> 16;    //bits 19:16
     proc_info->extended_family = (eax & 0x0FF00000) >> 20;    //bits 27:20
 }
 
@@ -299,7 +300,7 @@ uint64_t set_msr_value (int cpu, uint32_t reg, uint64_t data)
 
 
 // sets processor version
-void Print_Information_Processor(bool* nehalem, bool* sandy_bridge, bool* ivy_bridge, bool* haswell)
+void Print_Information_Processor(bool* nehalem, bool* sandy_bridge, bool* haswell)
 {
     struct family_info proc_info;
 
@@ -317,17 +318,26 @@ void Print_Information_Processor(bool* nehalem, bool* sandy_bridge, bool* ivy_br
     print_family_info (&proc_info);
 
     debug(prog_options.quiet, "msr = Model Specific Register");
-    print_model(prog_options.quiet, proc_info.model, proc_info.extended_model);
     if (proc_info.family >= 0x6) {
-        if (proc_info.extended_model >= 0x3) {
-            if (proc_info.model == 0xA) {
-                *ivy_bridge = true;
-            } else if (proc_info.model == 0xC) {
+        printf("%d", proc_info.model);
+        switch (get_intel_model(proc_info.model)) {
+            case INTEL_NEHALEM:
+            case INTEL_WESTMERE:
+                *nehalem = true;
+                break;
+            case INTEL_SANDYBRIDGE:
+            case INTEL_IVYBRIDGE:
+                *sandy_bridge = true;
+                break;
+            case INTEL_HASWELL:
+            case INTEL_BROADWELL:
+            case INTEL_KABYLAKE:
+            case INTEL_CANNONLAKE:
                 *haswell = true;
-            } else *haswell = true; //FIXME
-        } else if ((proc_info.model == 0xA || proc_info.model == 0xD) && proc_info.extended_model == 0x2) {
-            *sandy_bridge = true;
-        } else *nehalem = true;
+                break;
+            default:
+                break;
+        }
     } else {
         error("Unknown, possibly pre i7 processor detected.");
         exit (1);

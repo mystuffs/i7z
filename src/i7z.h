@@ -60,7 +60,7 @@ void logCpuCstates_dual_c(char* value, int);
 void logCpuCstates_dual_ts(struct timespec  *value, int) ;
 
 void debug (bool quiet, char* message);
-void print_model (bool quiet, int model, int extended_model);
+void print_model (bool quiet, int model);
 void error (char *message);
 
 struct cpu_hierarchy_info {
@@ -88,7 +88,7 @@ struct family_info
     char model;
     char family;
     char processor_type;
-    char extended_model;
+    //char extended_model;
     int extended_family;
 };
 
@@ -130,13 +130,14 @@ uint64_t get_msr_value (int cpu, uint32_t reg, unsigned int highbit,
 uint64_t set_msr_value (int cpu, uint32_t reg, uint64_t data);
 
 int get_number_of_present_cpu();
+int get_intel_model(char model);
 void get_candidate_cores(struct cpu_hierarchy_info* chi);
 void get_online_cpus(struct cpu_hierarchy_info* chi);
 void get_siblings_list(struct cpu_hierarchy_info* chi);
 void get_package_ids(struct cpu_hierarchy_info* chi);
 void print_cpu_list(struct cpu_hierarchy_info chi);
 void construct_cpu_hierarchy(struct cpu_hierarchy_info *chi);
-void Print_Information_Processor(bool*, bool*, bool*, bool*);
+void Print_Information_Processor(bool*, bool*, bool*);
 void Test_Or_Make_MSR_DEVICE_FILES();
 
 
